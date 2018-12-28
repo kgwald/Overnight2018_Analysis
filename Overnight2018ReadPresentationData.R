@@ -4,6 +4,9 @@
 
 Overnight2018ReadPresentationData <- function() {
   
+  #save starting directory
+  startdir <- getwd()
+  
   #libraries
   library(plyr) # for rbind.fill
   library(dplyr)
@@ -143,6 +146,10 @@ Overnight2018ReadPresentationData <- function() {
     setwd("..")
     
   }
+  
+  #return to starting directory
+  setwd(startdir)
+  
   #return a list with all of the created dataframes
   return(list(PresData, AttemptData, Cues, EveningData, MorningData, EveningMemoryData, MorningMemoryData, OvernightData, homelessdata))
 }
