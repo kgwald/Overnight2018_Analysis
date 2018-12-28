@@ -53,17 +53,22 @@ Overnight2018ReadPresentationData <- function() {
 
       
     #if the file name starts with "Cues" then it is not formatted the same way as the rest of the data  
-    }else if (substring(f,4) == "Cues"){
+    }else if (substring(f,1,4) == "Cues"){
       
       #no header
       d <- read.csv(f, header = FALSE,quote="",comment.char="")
       #add header
       colnames(d) <- c("C_Sound", "CueType", "CueRef", "CueAttenuation")
       #add SID and Session columns
+      #define start/end
+      sid_s <- regexpr("\\d",f)[1] #first digit
+      sid_e <- regexpr("\\d_",f)[1] #first digit followed by an underscore
+      sess_s <- regexpr("over",f)[1] #beginning of 'overnight"
+      sess_e <- regexpr("\\d_\\d",f)[1] #first digit followed by underscore and then another digit
+      #add columns
       d <- d %>%
-        mutate(SID = substring(f,6,9))
-
-      
+        mutate(SID = substring(f,sid_s,sid_e)) %>%
+        mutate(Session = substring(f, sess_s,sess_e))
       
     }else{
       
