@@ -5,6 +5,22 @@ date: "December 28, 2018"
 output: html_document
 ---
 
+```{r}
+###Notes to self:
+#1) Add data cleaning script first (need to correct for puzzle that was solved in the evening after moving on to the next puzzle)
+#2) Need to format tables better... something to do with the kable function in knitr?
+#3) There is apparently a way to cache things so that knitting doesn't take as long (reading in the data every time is a hassle)
+#4) THIS IS AWESOME!!!
+
+#Useful Resources#
+#https://rmarkdown.rstudio.com/lesson-7.html
+#https://www.rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf
+#https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-reference.pdf
+
+```
+
+
+
 ```{r setup, include=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
