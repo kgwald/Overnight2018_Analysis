@@ -30,18 +30,13 @@ Overnight2018ReadPresentationData <- function() {
     
     #before reading in the file, checks for trailing commas and eliminates
     #this was an issue for the MorningMemoryData for the first 4 participants (8001, 8002, 8003, 8005)
-    
-    #retrieves the file text
-    t <- file(f, "r") 
+   
     #checks for a comma at the end of the 1st (header) 2nd (first row of data) rows
     #if there is no comma at the end of the header but there IS one at the end of the data
-    if (!(grepl(",$",readLines(t,n=2)[1])) && grepl(",$",readLines(t,n=2)[2])) {
-      
-      #reread the file because grepl changes it... still confused about this
-      t <- file(f, "r") 
+    if (!(grepl(",$",readLines(f,n=2)[1])) && grepl(",$",readLines(f,n=2)[2])) {
       
       #read all the lines
-      r <- readLines(t)
+      r <- readLines(f)
       #remove commas from the end of the data and read that file
       r <- gsub(",$","",r)
       
@@ -55,6 +50,20 @@ Overnight2018ReadPresentationData <- function() {
       }
       #add the colnames from first row
       colnames(d) <- colnames(read.csv(textConnection(r[[1]])))
+
+      
+    #if the file name starts with "Cues" then it is not formatted the same way as the rest of the data  
+    }else if (substring(f,4) == "Cues"){
+      
+      #no header
+      d <- read.csv(f, header = FALSE,quote="",comment.char="")
+      #add header
+      colnames(d) <- c("C_Sound", "CueType", "CueRef", "CueAttenuation")
+      #add SID and Session columns
+      d <- d %>%
+        mutate(SID = substring(f,6,9))
+
+      
       
     }else{
       
