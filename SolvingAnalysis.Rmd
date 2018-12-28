@@ -1,0 +1,69 @@
+---
+title: "Overnight2018SolvingAnalysis"
+author: "Kristin"
+date: "December 28, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(knitr)
+library(tidyr)
+```
+
+# Solving Analysis for Evening and Morning Data
+
+
+```{r preprocessing, include=FALSE}
+source("Overnight2018ReadPresentationData.R")
+d <- Overnight2018ReadPresentationData()
+
+EData <- d[[4]]
+MData <- d[[5]]
+
+EData <- EData %>%
+  mutate(Solved = ifelse(TrialStatus == "solved",1,0))
+
+MData <- MData %>%
+  mutate(Solved = ifelse(TrialStatus == "solved",1,0))
+
+```
+
+## Solution Rates by Subject
+
+### Evening
+
+```{r echo = FALSE}
+e_propsolv <- EData %>%
+  group_by(SID) %>%
+  summarise(ProportionSolved = mean(Solved))
+
+e_propsolv
+
+```
+
+### Morning
+
+```{r, echo = FALSE}
+
+m_propsolv <- MData %>%
+  group_by(SID) %>%
+  summarise(ProportionSolved = mean(Solved))
+
+m_propsolv
+
+m_propsolv_CU <- MData %>%
+  group_by(SID,CuedStatus) %>%
+  summarise(ProportionSolved = mean(Solved)) %>%
+  spread(CuedStatus, ProportionSolved) %>%
+  mutate(CueingEffect = C - U)
+
+m_propsolv_CU
+
+#show overall cueing effect
+colMeans(m_propsolv_CU[,2:4])
+
+```
+
+
