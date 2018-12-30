@@ -8,9 +8,16 @@ output: html_document
 ```{r}
 ###Notes to self:
 #1) Add data cleaning script first (need to correct for puzzle that was solved in the evening after moving on to the next puzzle)
+
+
 #2) Need to format tables better... something to do with the kable function in knitr?
+    #After much struggle (kable was producing a blank screen) I got the kable() function to work by:
+    #1. installing the latest version of RStudio and 2. making sure I was using dplyr::summarize function
+    #Also adding the kableExtra package gives additional simple formatting options
+
 #3) There is apparently a way to cache things so that knitting doesn't take as long (reading in the data every time is a hassle)
-#4) THIS IS AWESOME!!!
+    #seems like I just need to add the option "cache = TRUE" to a code chunk and it will cache instead of     #re-loading each time -- will need to be careful if it does change though and needs to be reloaded
+
 
 #Useful Resources#
 #https://rmarkdown.rstudio.com/lesson-7.html
@@ -23,15 +30,17 @@ output: html_document
 
 ```{r setup, include=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(plyr) #pre-emptively attaching plyr so it doesn't overwrite dplyr when loaded in the read script
 library(dplyr)
 library(knitr)
+library(kableExtra)
 library(tidyr)
 ```
 
 # Solving Analysis for Evening and Morning Data
 
 
-```{r preprocessing, include=FALSE}
+```{r preprocessing, include=FALSE, cache=TRUE}
 source("Overnight2018ReadPresentationData.R")
 d <- Overnight2018ReadPresentationData()
 
@@ -50,12 +59,13 @@ MData <- MData %>%
 
 ### Evening
 
-```{r echo = FALSE}
+```{r results = 'asis', echo = FALSE}
 e_propsolv <- EData %>%
   group_by(SID) %>%
-  summarise(ProportionSolved = mean(Solved))
+  summarise(Proportion_Solved = mean(Solved))
 
-e_propsolv
+kable(e_propsolv, digits = 2, align = 'c', caption = "Evening Solving Rates") %>%
+  kable_styling("striped", full_width = FALSE, position = "left")
 
 ```
 
@@ -63,22 +73,30 @@ e_propsolv
 
 ```{r, echo = FALSE}
 
+#Overall
 m_propsolv <- MData %>%
   group_by(SID) %>%
-  summarise(ProportionSolved = mean(Solved))
+  summarise(Proportion_Solved = mean(Solved))
 
-m_propsolv
+kable(m_propsolv, digits = 2, align = 'c', caption = "Morning Solving Rates") %>%
+  kable_styling("striped", full_width = FALSE, position = "left")
 
+#By Cued Status
 m_propsolv_CU <- MData %>%
-  group_by(SID,CuedStatus) %>%
-  summarise(ProportionSolved = mean(Solved)) %>%
+  dplyr::group_by(SID,CuedStatus) %>%
+  dplyr::summarise(ProportionSolved = mean(Solved)) %>%
   spread(CuedStatus, ProportionSolved) %>%
   mutate(CueingEffect = C - U)
 
-m_propsolv_CU
+kable(m_propsolv_CU, digits = 2, align = 'c', caption = "Morning Solving Rates by Cueing") %>%
+  kable_styling("striped", full_width = FALSE, position = "left")
 
-#show overall cueing effect
-colMeans(m_propsolv_CU[,2:4])
+#Overall cueing effect
+cm <- colMeans(m_propsolv_CU[,2:4])
+
+kable(cm, digits = 2, align = 'c', caption = "Overall Cueing Effect") %>%
+  kable_styling("striped", full_width = FALSE, position = "left")
+
 
 ```
 
