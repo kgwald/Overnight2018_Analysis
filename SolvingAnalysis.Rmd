@@ -37,6 +37,27 @@ library(kableExtra)
 library(tidyr)
 ```
 
+
+
+```{r, include = FALSE}
+
+createAverageRow <- function(df){
+  
+  #creates a row average at the end of the data frame and returns the updated data frame
+  #assumes the first column is some sort of identifier/named column and therefore not meant to be averaged
+  
+  nrow <- nrow(df)
+  ncol <- ncol(df)
+  df[nrow+1,1] <- "Average"
+  df[nrow+1,2:ncol] <- colMeans(df[,2:ncol], na.rm=TRUE) 
+  
+  return(df)
+  
+}
+
+
+```
+
 # Solving Analysis for Evening and Morning Data
 
 
@@ -78,6 +99,9 @@ m_propsolv <- MData %>%
   group_by(SID) %>%
   summarise(Proportion_Solved = mean(Solved))
 
+m_propsolv <- createAverageRow(m_propsolv) #add average row
+
+
 kable(m_propsolv, digits = 2, align = 'c', caption = "Morning Solving Rates") %>%
   kable_styling("striped", full_width = FALSE, position = "left")
 
@@ -88,14 +112,15 @@ m_propsolv_CU <- MData %>%
   spread(CuedStatus, ProportionSolved) %>%
   mutate(CueingEffect = C - U)
 
+m_propsolv_CU <- createAverageRow(m_propsolv_CU) #add average row
+
+
 kable(m_propsolv_CU, digits = 2, align = 'c', caption = "Morning Solving Rates by Cueing") %>%
   kable_styling("striped", full_width = FALSE, position = "left")
 
-#Overall cueing effect
-cm <- colMeans(m_propsolv_CU[,2:4])
 
-kable(cm, digits = 2, align = 'c', caption = "Overall Cueing Effect") %>%
-  kable_styling("striped", full_width = FALSE, position = "left")
+
+
 
 
 ```
