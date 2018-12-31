@@ -35,6 +35,8 @@ library(dplyr)
 library(knitr)
 library(kableExtra)
 library(tidyr)
+library(ggplot2)
+
 ```
 
 
@@ -59,7 +61,6 @@ showNiceTable <- function(df, mycaption){
   
   kable(df, digits = 2, align = 'c', caption = mycaption) %>%
   kable_styling("striped", full_width = FALSE, position = "left")
-  
   
 }
 
@@ -120,14 +121,77 @@ m_propsolv_CU <- MData %>%
 
 m_propsolv_CU <- createAverageRow(m_propsolv_CU) #add average row
 
-
 showNiceTable(m_propsolv_CU, "Morning Solving Rates by Cueing")
-
-
-
-
-
 
 ```
 
+
+## Memory Rates by Subject
+
+### Evening
+
+##### Evening Overall
+
+```{r}
+
+source("Overnight2018CleanEveningMemory.R")
+
+eMem <- Overnight2018CleanEveningMemory()
+
+#Memory for Each Round and Overall
+e_psmem <- eMem %>%
+  group_by(SID,Round) %>%
+  summarise(Proportion_Recalled = mean(PSRecallAcc)) %>%
+  spread(Round, Proportion_Recalled) %>%
+  ungroup() %>%
+  mutate(Average = rowMeans(.[,2:5])) #gets the row mean
+
+e_psmem <- createRowAverage(e_psmem)
+
+showNiceTable(e_psmem, "Evening Puzzle-Sound Memory by Round")
+
+```
+
+##### Evening by Session
+
+```{r}
+#Memory for Eacch Round by Session
+
+e_psmem_bysess <- eMem %>%
+  group_by(SID,Session,Round) %>%
+  summarise(Proportion_Recalled = mean(PSRecallAcc))
+
+
+#Graph
+
+e_psmem_bysess$SID <- as.factor(e_psmem_bysess$SID)
+e_psmem_bysess$Session <- as.factor(e_psmem_bysess$Session)
+e_psmem_bysess$Round <- as.factor(e_psmem_bysess$Round)
+
+ggplot(e_psmem_bysess, aes(x = Round, y = Proportion_Recalled, group = SID)) +
+  theme_bw() +
+  geom_point(aes(color = SID)) +
+  geom_line(aes(color = SID)) +
+  facet_grid(.~ Session)
+
+#Overall Averages
+e_psmem_bysess2 <- e_psmem_bysess %>%
+  group_by(Session, Round) %>%
+  summarize(Proportion_Recalled = mean(Proportion_Recalled)) %>%
+  spread(Round, Proportion_Recalled) %>%
+  ungroup() %>%
+  mutate(Average = rowMeans(.[,2:5])) #gets the row mean
+
+showNiceTable(e_psmem_bysess2, "Evening Memory by Round and Session")
+
+```
+
+
+
+
+```{r}
+
+mMem <- d[7]
+
+```
 
