@@ -147,6 +147,16 @@ Overnight2018ReadPresentationData <- function() {
     
   }
   
+  #write compiled datafiles
+  #write_csv(PresData,"RawPresentationOutputData_compiled.csv") #doesn't exist yet
+  write_csv(AttemptData,"RawAttemptData_compiled.csv")
+  write_csv(Cues,"RawCuesData_compiled.csv")
+  write_csv(EveningData,"RawEveningData_compiled.csv")
+  write_csv(MorningData,"RawMorningData_compiled.csv")
+  write_csv(EveningMemoryData,"RawEveningMemoryData_compiled.csv")
+  write_csv(MorningMemoryData,"RawMorningMemoryData_compiled.csv")
+  write_csv(OvernightData,"RawOvernightData_compiled.csv")
+ 
   #return to starting directory
   setwd(startdir)
   
