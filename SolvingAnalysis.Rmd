@@ -29,7 +29,7 @@ output: html_document
 
 
 ```{r setup, include=FALSE, warning=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 library(plyr) #pre-emptively attaching plyr so it doesn't overwrite dplyr when loaded in the read script
 library(dplyr)
 library(knitr)
@@ -94,6 +94,8 @@ e_propsolv <- EData %>%
   group_by(SID) %>%
   summarise(Proportion_Solved = mean(Solved))
 
+e_propsolv <- createAverageRow(e_propsolv)
+
 showNiceTable(e_propsolv, "Evening Solving Rates")
 
 ```
@@ -146,7 +148,7 @@ e_psmem <- eMem %>%
   ungroup() %>%
   mutate(Average = rowMeans(.[,2:5])) #gets the row mean
 
-e_psmem <- createRowAverage(e_psmem)
+e_psmem <- createAverageRow(e_psmem)
 
 showNiceTable(e_psmem, "Evening Puzzle-Sound Memory by Round")
 
@@ -186,9 +188,9 @@ showNiceTable(e_psmem_bysess2, "Evening Memory by Round and Session")
 
 ```
 
+### Morning
 
-
-
+##### Morning Overall
 ```{r}
 
 mMem <- d[7]
