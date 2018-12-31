@@ -39,7 +39,7 @@ library(tidyr)
 
 
 
-```{r, include = FALSE}
+```{r myfunctions, include = FALSE}
 
 createAverageRow <- function(df){
   
@@ -52,6 +52,14 @@ createAverageRow <- function(df){
   df[nrow+1,2:ncol] <- colMeans(df[,2:ncol], na.rm=TRUE) 
   
   return(df)
+  
+}
+
+showNiceTable <- function(df, mycaption){
+  
+  kable(df, digits = 2, align = 'c', caption = mycaption) %>%
+  kable_styling("striped", full_width = FALSE, position = "left")
+  
   
 }
 
@@ -85,8 +93,7 @@ e_propsolv <- EData %>%
   group_by(SID) %>%
   summarise(Proportion_Solved = mean(Solved))
 
-kable(e_propsolv, digits = 2, align = 'c', caption = "Evening Solving Rates") %>%
-  kable_styling("striped", full_width = FALSE, position = "left")
+showNiceTable(e_propsolv, "Evening Solving Rates")
 
 ```
 
@@ -102,8 +109,7 @@ m_propsolv <- MData %>%
 m_propsolv <- createAverageRow(m_propsolv) #add average row
 
 
-kable(m_propsolv, digits = 2, align = 'c', caption = "Morning Solving Rates") %>%
-  kable_styling("striped", full_width = FALSE, position = "left")
+showNiceTable(m_propsolv, "Morning Solving Rates") 
 
 #By Cued Status
 m_propsolv_CU <- MData %>%
@@ -115,8 +121,7 @@ m_propsolv_CU <- MData %>%
 m_propsolv_CU <- createAverageRow(m_propsolv_CU) #add average row
 
 
-kable(m_propsolv_CU, digits = 2, align = 'c', caption = "Morning Solving Rates by Cueing") %>%
-  kable_styling("striped", full_width = FALSE, position = "left")
+showNiceTable(m_propsolv_CU, "Morning Solving Rates by Cueing")
 
 
 
