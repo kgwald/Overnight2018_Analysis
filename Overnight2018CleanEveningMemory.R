@@ -55,6 +55,14 @@ Overnight2018CleanEveningMemory <- function(){
     group_by(SID, Session) %>%
     mutate(MemoryOrder = row_number())
   
+  #Creates a "Round" column to identify which round of the memory test an item occurred
+  numRounds = 4 #number of Puzzle-Sound recall rounds
+  editeddata <- editeddata %>%
+    group_by(SID, Session) %>%
+    add_tally() %>% #adds a column titled 'n' that tallies the number of observations per SID/Session
+    mutate(Round = ifelse(MemoryOrder <= n/numRounds, 1, ifelse(MemoryOrder <= (n/numRounds)*2, 2, ifelse(MemoryOrder <= (n/numRounds)*3,3,ifelse(MemoryOrder <= (n/numRounds)*4,4,NA))))) %>%
+    select(-n) #remove the tally column
+  
   setwd(startdir)
 
   return(editeddata)
