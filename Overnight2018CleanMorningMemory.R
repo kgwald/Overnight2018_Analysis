@@ -69,7 +69,7 @@ Overnight2018CleanMorningMemory <- function(){
     select(SID, Session, grep("Option", colnames(editeddata), value = TRUE)) %>%
     unique() %>%
     group_by(SID, Session) %>%
-    gather(key = OptionNum, value = RecognitionRespTitle, RecognitionOption1, RecognitionOption2, RecognitionOption3, RecognitionOption4,RecognitionOption5,RecognitionOption6)
+    gather(key = OptionNum, value = RecognitionRespTitle, RecognitionOption1, RecognitionOption2, RecognitionOption3, RecognitionOption4,RecognitionOption5,RecognitionOption6,RecognitionOption7,RecognitionOption8)
   #replace "RecognitionOption" with the number for joining purposes
   options$OptionNum<- gsub("RecognitionOption","",options$OptionNum)
   
