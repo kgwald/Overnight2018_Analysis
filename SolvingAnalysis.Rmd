@@ -57,10 +57,21 @@ createAverageRow <- function(df){
   
 }
 
-showNiceTable <- function(df, mycaption){
+showNiceTable <- function(df, mycaption, fn = NA){
   
-  kable(df, digits = 2, align = 'c', caption = mycaption) %>%
-  kable_styling("striped", full_width = FALSE, position = "left")
+  if(is.na(fn)){
+    
+    #no footnote
+    kable(df, digits = 2, align = 'c', caption = mycaption) %>%
+      kable_styling("striped", full_width = FALSE, position = "left")
+    
+  }else{
+  
+    #yes footnote
+    kable(df, digits = 2, align = 'c', caption = mycaption) %>%
+      kable_styling("striped", full_width = FALSE, position = "left") %>%
+      footnote(general = fn)
+  }  
   
 }
 
@@ -157,7 +168,7 @@ showNiceTable(e_psmem, "Evening Puzzle-Sound Memory by Round")
 ##### Evening by Session
 
 ```{r}
-#Memory for Eacch Round by Session
+#Memory for Each Round by Session
 
 e_psmem_bysess <- eMem %>%
   group_by(SID,Session,Round) %>%
@@ -193,7 +204,34 @@ showNiceTable(e_psmem_bysess2, "Evening Memory by Round and Session")
 ##### Morning Overall
 ```{r}
 
-mMem <- d[7]
+source("Overnight2018CleanMorningMemory.R")
+
+mMem <- Overnight2018CleanMorningMemory()
+
+#Puzzle-Sound Recall Memory by Session and Overall
+m_psmem <- mMem %>%
+  group_by(SID,Session) %>%
+  summarise(Proportion_Recalled = mean(PSRecallAcc, na.rm=TRUE)) %>%
+  spread(Session, Proportion_Recalled) %>%
+  ungroup() %>%
+  mutate(Average = rowMeans(.[,2:3]))
+
+m_psmem <- createAverageRow(m_psmem)
+
+showNiceTable(m_psmem, "Morning Puzzle-Sound Recall Memory by Session", fn = "e1 and e2 are actually m1 and m2")
+
+
+#Puzzle-Sound Recognition Memory by Session and Overall
+m_psrecog <- mMem %>%
+  group_by(SID,Session) %>%
+  summarise(Proportion_Recognized = mean(RecognitionAcc, na.rm=TRUE)) %>%
+  spread(Session, Proportion_Recognized) %>%
+  ungroup() %>%
+  mutate(Average = rowMeans(.[,2:3]))
+
+m_psrecog <- createAverageRow(m_psrecog)
+
+showNiceTable(m_psrecog, "Morning Puzzle-Sound Recognition Memory by Session", fn = "e1 and e2 are actually m1 and m2 \n For the first four participants only 6/8 responses were recorded")
 
 ```
 
