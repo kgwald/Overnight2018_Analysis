@@ -12,6 +12,9 @@ Overnight2018ReadPresentationData <- function() {
   library(dplyr)
   library(readr) #for reading files
   
+  #source the Presentation Data Parsing Function
+  source("Overnight2018ParseRawPresentationData.R")
+  
   #Data folder exists one step above the project folder
   #Reason: don't want to store the data on github
   setwd("../PresentationData")
@@ -27,6 +30,8 @@ Overnight2018ReadPresentationData <- function() {
   OvernightData <- data.frame()
   
   homelessdata <- list() #for problematic data
+  
+
   
   #create mini function for reading and writing the files
   kgread <- function(f, df){
@@ -98,12 +103,28 @@ Overnight2018ReadPresentationData <- function() {
     #cd into the subject folder
     setwd(paste(getwd(),"/",dir,sep=""))
     
-    #variable containing list of all files in folder
-    file_list = list.files(pattern = ".csv")
     
-    #Skips the files that start with the subject number
-    #These files are Presentation's output, it's not well-formatted and therefore I'm not sure how I will parse them yet
-    #PresData are .log files
+    ##### Read in the raw Presentation Data Output Files (messy) #####
+    
+    #8001 does not have these output files
+    if(dir != "8001"){
+      
+      #list of all .log Presentation output files
+      pres_list = list.files(pattern = ".log") #Presentation Files are the only ones that start with a digit for the SID number
+      
+      for(file in pres_list){
+        
+        pd <- Overnight2018ParseRawPresentationData(file)
+        PresData <- rbind.fill(PresData,pd)
+        
+      }
+    }
+    
+    
+    ##### Read in all formatted .csv Output Files #####
+    
+    #variable containing list of all .csv files in folder
+    file_list = list.files(pattern = ".csv")
     
     for (file in file_list){
       
@@ -148,7 +169,7 @@ Overnight2018ReadPresentationData <- function() {
   }
   
   #write compiled datafiles
-  #write_csv(PresData,"RawPresentationOutputData_compiled.csv") #doesn't exist yet
+  write_csv(PresData,"RawPresentationOutputData_compiled.csv")
   write_csv(AttemptData,"RawAttemptData_compiled.csv")
   write_csv(Cues,"RawCuesData_compiled.csv")
   write_csv(EveningData,"RawEveningData_compiled.csv")
