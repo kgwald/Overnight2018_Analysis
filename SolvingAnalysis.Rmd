@@ -83,24 +83,34 @@ showNiceTable <- function(df, mycaption, fn = NA){
 
 ```{r preprocessing, include=FALSE, cache=TRUE}
 source("Overnight2018ReadPresentationData.R")
-d <- Overnight2018ReadPresentationData()
+source("Overnight2018CleanEveningData.R")
+source("Overnight2018CleanMorningData.R")
 
-EData <- d[[4]]
-MData <- d[[5]]
-
-EData <- EData %>%
-  mutate(Solved = ifelse(TrialStatus == "solved",1,0))
-
-MData <- MData %>%
-  mutate(Solved = ifelse(TrialStatus == "solved",1,0))
+#Run to reference raw data if necessary, also re-creates the rawdata_compiled output csv files for use in the
+#cleaning scripts. Note this takes several seconds to minutes to run the first time the script is launched then it iscached for future use in that R session
+rawData <- Overnight2018ReadPresentationData() 
 
 ```
+
+```{r, include = FALSE}
+
+#create and clean the evening and morning solving data
+EData <- Overnight2018CleanEveningData()
+MData <- Overnight2018CleanMorningData()
+
+#exclusions
+MData <- subset(MData, TrialStatus != "exclude-solvedlastnight")
+
+```
+
 
 ## Solution Rates by Subject
 
 ### Evening
 
 ```{r results = 'asis', echo = FALSE}
+
+#Overall solving
 e_propsolv <- EData %>%
   group_by(SID) %>%
   summarise(Proportion_Solved = mean(Solved))
@@ -108,6 +118,19 @@ e_propsolv <- EData %>%
 e_propsolv <- createAverageRow(e_propsolv)
 
 showNiceTable(e_propsolv, "Evening Solving Rates")
+
+#By insight and analysis
+e_propsolv_ia <- EData %>%
+  group_by(SID,InsightorAnalysisResp) %>%
+  tally() %>%
+  spread(InsightorAnalysisResp, n)
+e_propsolv_ia[is.na(e_propsolv_ia)] <- 0
+
+e_propsolv_ia <- createAverageRow(e_propsolv_ia)
+
+showNiceTable(e_propsolv_ia, "Evening Solving Rates by Insight and Analysis")
+
+
 
 ```
 
@@ -136,7 +159,135 @@ m_propsolv_CU <- createAverageRow(m_propsolv_CU) #add average row
 
 showNiceTable(m_propsolv_CU, "Morning Solving Rates by Cueing")
 
+#By Insight and Analysis
+m_propsolv_CU_ia <- MData %>%
+  group_by(SID,CuedStatus,InsightorAnalysisResp) %>%
+  count() %>%
+  ungroup() %>%
+  mutate(CUIA = paste(CuedStatus, InsightorAnalysisResp, sep = "_")) %>%
+  select(-CuedStatus, -InsightorAnalysisResp) %>%
+  spread(CUIA, n)
+m_propsolv_CU_ia[is.na(m_propsolv_CU_ia)] <- 0
+
+
 ```
+
+## Evening Closeness & Stuckedness by Subjct
+
+```{r}
+#create dataset for unsolved data only (the ones that have closeness and fixation ratings)
+e_unsolv <- subset(EData, TrialStatus == "unsolved")
+
+
+#Fixation Ratings
+e_fixstat <- e_unsolv %>%
+  group_by(SID,FixationRatingResp) %>%
+  tally() %>%
+  spread(FixationRatingResp,n) %>%
+  mutate(Total = sum(stillworking,stuck)) %>%
+  mutate(Proportion_Stuck = stuck/Total)
+
+e_fixstat <- createAverageRow(e_fixstat)
+
+showNiceTable(e_fixstat, "Evening Stuckedness Ratings by Subject")
+
+#Closeness Ratings
+e_close <- e_unsolv %>%
+  group_by(SID) %>%
+  summarize(Mean_Closeness = mean(WarmthRatingResp))
+
+e_close <- createAverageRow(e_close)
+
+showNiceTable(e_close, "Evening Closeness Ratings by Subject")
+
+
+#Average Closeness Ratings for Two Categories of Stuckedness
+e_fixclose <- e_unsolv %>%
+  group_by(SID, FixationRatingResp) %>%
+  summarise(close = mean(WarmthRatingResp)) %>%
+  spread(FixationRatingResp, close)
+
+e_fixclose <- createAverageRow(e_fixclose)
+
+showNiceTable(e_fixclose, "Evening Closeness Ratings by Subject & Stuckedness")
+
+
+```
+
+## Evening Closeness & Stuckedness by Puzzle Type
+
+```{r}
+#Fixation Ratings
+e_fixstat_puz <- e_unsolv %>%
+  group_by(ProblemType, FixationRatingResp) %>%
+  tally() %>%
+  spread(FixationRatingResp,n) %>%
+  mutate(Total = sum(stillworking,stuck)) %>%
+  mutate(Proportion_Stuck = stuck/Total)
+
+e_fixstat_puz <- createAverageRow(e_fixstat_puz)
+
+showNiceTable(e_fixstat_puz, "Evening Stuckedness Ratings by Puzzle Type")
+
+#Closeness Ratings
+e_close_puz <- e_unsolv %>%
+  group_by(ProblemType) %>%
+  summarize(Mean_Closeness = mean(WarmthRatingResp))
+
+e_close_puz <- createAverageRow(e_close_puz)
+
+showNiceTable(e_close_puz, "Evening Closeness Ratings by Subject")
+
+
+```
+
+## Morning Closeness & Solution Goodness by Subject
+
+```{r, message = FALSE}
+
+#Closness Ratings
+
+#Unsolved puzzles only for closeness
+m_unsolv <- subset(MData, TrialStatus == "unsolved")
+
+#Closeness Ratings by CuedStatus and Overall
+m_close <- m_unsolv %>%
+  group_by(SID, CuedStatus) %>%
+  summarize(Mean_Closeness = mean(WarmthRatingResp)) %>%
+  spread(CuedStatus, Mean_Closeness) %>%
+  ungroup()
+#add overall column
+o <- m_unsolv %>%
+  group_by(SID) %>%
+  summarize(Overall = mean(WarmthRatingResp))
+m_close <- left_join(m_close,o)
+
+m_close <- createAverageRow(m_close)
+
+showNiceTable(m_close, "Morning Closeness Ratings by CuedStatus & Subject")
+
+
+#Solution Goodness
+m_goodsoln <- MData %>%
+  group_by(SID,TrialStatus) %>%
+  summarize(SolutionGoodness = mean(FairnessRatingResp)) %>%
+  spread(TrialStatus, SolutionGoodness) %>%
+  ungroup()
+#add overall column
+o <- MData %>%
+  group_by(SID) %>%
+  summarize(Overall = mean(FairnessRatingResp))
+m_goodsoln <- left_join(m_goodsoln,o)
+
+m_goodsoln <- createAverageRow(m_goodsoln)
+
+showNiceTable(m_goodsoln, "Morning Solution Goodness Ratings by Solution Status & Subject")
+
+
+```
+
+
+
 
 
 ## Memory Rates by Subject
@@ -201,7 +352,7 @@ showNiceTable(e_psmem_bysess2, "Evening Memory by Round and Session")
 
 ### Morning
 
-##### Morning Overall
+##### Morning Overall & By Session
 ```{r}
 
 source("Overnight2018CleanMorningMemory.R")
