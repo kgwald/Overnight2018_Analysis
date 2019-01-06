@@ -130,8 +130,25 @@ Overnight2018ReadPresentationData <- function() {
       
       #AttemptData (both evening and morning together)
       if (grepl("^AttemptData", file) ){
-        AttemptData <- kgread(file, AttemptData)
-      
+        
+        #special edit for 8001 whose columns were incorrectly shifted
+        if (dir == "8001"){
+          temp <- read.csv(file, header = TRUE,quote="",comment.char="")
+          temp <- temp %>%
+            mutate(AttemptRT = AttemptResp) %>%
+            mutate(AttemptResp = AttemptNumItem) %>%
+            mutate(AttemptNumItem = CuedStatus) %>%
+            mutate(CuedStatus = NA)
+          AttemptData <- rbind.fill(AttemptData,temp)
+        }else{
+          AttemptData <- kgread(file, AttemptData)
+        }
+        
+        #special edit for removing the X column from first 4 participants' files
+        if(dir == "8001" | dir == "8002" | dir == "8003" | dir == "8005") {
+          AttemptData <- select(AttemptData, -X)
+        }
+
       #Cue references for overnight data  
       }else if(grepl("^Cues_", file) ){
         Cues <- kgread(file,Cues)
