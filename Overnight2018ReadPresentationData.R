@@ -52,6 +52,7 @@ Overnight2018ReadPresentationData <- function() {
       for (i in 2:length(r)) {
         
         #read in each line and add to the data frame
+        #have to leave as read.csv (instead of read_csv) so numbers may be wrong
         l <- read.csv(textConnection(r[[i]]), header=FALSE)
         d <- rbind.fill(d,l)
 
@@ -64,7 +65,8 @@ Overnight2018ReadPresentationData <- function() {
     }else if (substring(f,1,4) == "Cues"){
       
       #no header
-      d <- read.csv(f, header = FALSE,quote="",comment.char="")
+      d <- read_csv(f, col_names = TRUE, col_types = cols(.default = "c"),quote="", comment="")
+      
       #add header
       colnames(d) <- c("C_Sound", "CueType", "CueRef", "CueAttenuation")
       #add SID and Session columns
@@ -83,7 +85,8 @@ Overnight2018ReadPresentationData <- function() {
       #reads in file normally
       #d <- read_csv(f, col_names = TRUE, col_types = cols(.default = "c", AttemptRT = "d", ReadRT = "d" ),quote="", comment="")
       #d <- read.csv(f, header = TRUE, colClasses = c("character", "AttemptRT" = "double", "ReadRT" = "double" ),quote="", comment="")
-      d <- read.csv(f, header = TRUE,quote="", comment="")
+      #d <- read.csv(f, header = TRUE,quote="", comment="")
+      d <- read_csv(f, col_names = TRUE, col_types = cols(.default = "c"),quote="", comment="")
       
     }
     
@@ -133,22 +136,27 @@ Overnight2018ReadPresentationData <- function() {
       #AttemptData (both evening and morning together)
       if (grepl("^AttemptData", file) ){
         
-        #special edit for 8001 whose columns were incorrectly shifted
-        if (dir == "8001"){
-          temp <- read.csv(file, header = TRUE,quote="",comment.char="")
+        #special edit for 8001's two evening files whose columns were incorrectly shifted
+        if (file == "AttemptData_8001_e1_11-25-18_10_34_10_PM.csv" | file == "AttemptData_8001_e2_11-26-18_09_48_16_PM.csv"){
+          temp <- read_csv(file, col_names = TRUE, col_types = cols(.default = "c"),na = character(),quote="", comment="")
           temp <- temp %>%
             mutate(AttemptRT = AttemptResp) %>%
             mutate(AttemptResp = AttemptNumItem) %>%
             mutate(AttemptNumItem = CuedStatus) %>%
-            mutate(CuedStatus = NA)
+            mutate(CuedStatus = NA) %>%
+            select(-CuedStatus, -X17)
           AttemptData <- rbind.fill(AttemptData,temp)
+        #and remaining two morning files which have the CuedStatus column (which they should)
+        }else if(dir == "8001"){
+            temp <- read_csv(file, col_names = TRUE, col_types = cols(.default = "c"),na = character(),quote="", comment="")
+            temp <- select(temp, -CuedStatus, -X17)
         }else{
           AttemptData <- kgread(file, AttemptData)
         }
         
-        #special edit for removing the X column from first 4 participants' files
-        if(dir == "8001" | dir == "8002" | dir == "8003" | dir == "8005") {
-          AttemptData <- select(AttemptData, -X)
+        #special edit for removing the X column from participants 2, 3 and 4 files
+        if(dir == "8002" | dir == "8003" | dir == "8005") {
+          AttemptData <- select(AttemptData, -X16)
         }
 
       #Cue references for overnight data  
