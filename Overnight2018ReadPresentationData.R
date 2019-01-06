@@ -81,7 +81,9 @@ Overnight2018ReadPresentationData <- function() {
     }else{
       
       #reads in file normally
-      d <- read.csv(f, header = TRUE,quote="",comment.char="")
+      #d <- read_csv(f, col_names = TRUE, col_types = cols(.default = "c", AttemptRT = "d", ReadRT = "d" ),quote="", comment="")
+      #d <- read.csv(f, header = TRUE, colClasses = c("character", "AttemptRT" = "double", "ReadRT" = "double" ),quote="", comment="")
+      d <- read.csv(f, header = TRUE,quote="", comment="")
       
     }
     
