@@ -98,6 +98,11 @@ rawData <- Overnight2018ReadPresentationData()
 EData <- Overnight2018CleanEveningData()
 MData <- Overnight2018CleanMorningData()
 
+#adjust columns
+EData$WarmthRatingResp <- as.numeric(EData$WarmthRatingResp)
+MData$WarmthRatingResp <- as.numeric(MData$WarmthRatingResp)
+MData$FairnessRatingResp <- as.numeric(MData$FairnessRatingResp)
+
 #exclusions
 MData <- subset(MData, TrialStatus != "exclude-solvedlastnight")
 
@@ -194,7 +199,7 @@ showNiceTable(e_fixstat, "Evening Stuckedness Ratings by Subject")
 #Closeness Ratings
 e_close <- e_unsolv %>%
   group_by(SID) %>%
-  summarize(Mean_Closeness = mean(WarmthRatingResp))
+  summarize(Mean_Closeness = mean(WarmthRatingResp, na.rm = TRUE))
 
 e_close <- createAverageRow(e_close)
 
@@ -204,7 +209,7 @@ showNiceTable(e_close, "Evening Closeness Ratings by Subject")
 #Average Closeness Ratings for Two Categories of Stuckedness
 e_fixclose <- e_unsolv %>%
   group_by(SID, FixationRatingResp) %>%
-  summarise(close = mean(WarmthRatingResp)) %>%
+  summarise(close = mean(WarmthRatingResp, na.rm = TRUE)) %>%
   spread(FixationRatingResp, close)
 
 e_fixclose <- createAverageRow(e_fixclose)
@@ -270,13 +275,13 @@ showNiceTable(m_close, "Morning Closeness Ratings by CuedStatus & Subject")
 #Solution Goodness
 m_goodsoln <- MData %>%
   group_by(SID,TrialStatus) %>%
-  summarize(SolutionGoodness = mean(FairnessRatingResp)) %>%
+  summarize(SolutionGoodness = mean(FairnessRatingResp, na.rm = TRUE)) %>%
   spread(TrialStatus, SolutionGoodness) %>%
   ungroup()
 #add overall column
 o <- MData %>%
   group_by(SID) %>%
-  summarize(Overall = mean(FairnessRatingResp))
+  summarize(Overall = mean(FairnessRatingResp, na.rm = TRUE))
 m_goodsoln <- left_join(m_goodsoln,o)
 
 m_goodsoln <- createAverageRow(m_goodsoln)
