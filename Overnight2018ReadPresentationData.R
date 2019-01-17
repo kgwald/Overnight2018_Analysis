@@ -150,6 +150,7 @@ Overnight2018ReadPresentationData <- function() {
         }else if(dir == "8001"){
             temp <- read_csv(file, col_names = TRUE, col_types = cols(.default = "c"),na = character(),quote="", comment="")
             temp <- select(temp, -CuedStatus, -X17)
+            AttemptData <- rbind.fill(AttemptData,temp)
         }else{
           AttemptData <- kgread(file, AttemptData)
         }
