@@ -51,6 +51,20 @@ Overnight2018CleanMorningData <- function(){
   #for the evening, exclude from morning data
   editeddata$TrialStatus[editeddata$SID =="8005" & editeddata$Session == "m1" & editeddata$ProblemID == "M08d"] <- "exclude-solvedlastnight"
   
+  #8006 M1 M02d - participant said solution came to her last night but then forgot it and only realized half of it last night
+  #(moving one triangle) and didn't know where to move it until this morning
+  
+  #8006 M1 S03a - participant thought she solved last night but forgot that diagonals couldn't reach square corners
+  #no edit necessary
+  
+  #8006 M2 V13a - hard to tell exactly when participant solved this puzzle, based on given information, decided it was
+  #this morning before the session started because didn't know full answer until then rather than last night (decision made blind to cueing condition)
+  
+  #8006 M2 R02a - actually solved during PS recall so maybe should adjust RT?
+  
+  
+  
+  
   setwd(startdir)
   return(editeddata)
   
