@@ -126,15 +126,24 @@ showNiceTable(e_propsolv, "Evening Solving Rates")
 
 #By insight and analysis
 e_propsolv_ia <- EData %>%
-  group_by(SID,InsightorAnalysisResp) %>%
+  group_by(SID,TrialStatus,InsightorAnalysisResp) %>%
   tally() %>%
-  spread(InsightorAnalysisResp, n)
+  mutate(cond = ifelse(TrialStatus == "unsolved","U",ifelse(InsightorAnalysisResp == "insight","I",ifelse(InsightorAnalysisResp == "analysis","A","-999")))) %>%
+  ungroup() %>%
+  select(-TrialStatus,-InsightorAnalysisResp) %>%
+  spread(cond, n)
+
+#fill in 0's
 e_propsolv_ia[is.na(e_propsolv_ia)] <- 0
+
+#calculate proportions
+e_propsolv_ia <- e_propsolv_ia %>%
+  mutate(PropISolved = I/(I + A + U)) %>%
+  mutate(PropASolved = A/(I + A + U))
 
 e_propsolv_ia <- createAverageRow(e_propsolv_ia)
 
 showNiceTable(e_propsolv_ia, "Evening Solving Rates by Insight and Analysis")
-
 
 
 ```

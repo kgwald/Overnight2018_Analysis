@@ -80,6 +80,10 @@ Overnight2018CleanMorningMemory <- function(){
   editeddata <- editeddata %>%
     mutate(RecognitionAcc = ifelse(ProblemTitle == RecognitionRespTitle,1,0))
   
+  #change e1/e2 to m1/m2 to avoid confusion
+  editeddata$Session <- gsub("e","m",editeddata$Session)
+    
+  
   
   
   setwd(startdir)
